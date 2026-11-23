@@ -53,6 +53,25 @@ body {
 }
 
 /* ============================================================
+   FLOATING AUDIO BUTTON (Inside Story)
+   ============================================================ */
+.floating-audio {
+  position: fixed; bottom: 20px; left: 20px; z-index: 1000;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(16, 26, 32, 0.7);
+  border: 1px solid rgba(184, 162, 122, 0.4);
+  color: var(--gold); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s var(--ease);
+  opacity: 0; pointer-events: none;
+}
+.floating-audio.visible { opacity: 1; pointer-events: auto; }
+.floating-audio:hover { background: rgba(184, 162, 122, 0.2); transform: scale(1.1); }
+.floating-audio svg { width: 20px; height: 20px; fill: currentColor; }
+@media (max-width: 768px) { .floating-audio { bottom: 15px; left: 15px; width: 38px; height: 38px; } }
+
+/* ============================================================
    OPENING GATE
    ============================================================ */
 .gate {
@@ -116,19 +135,20 @@ body {
   display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
   opacity: 0; animation: fade-up 1.4s 4s forwards var(--ease);
 }
-.btn-enter, .btn-audio {
+.btn-enter, .btn-audio-gate {
   font-family: var(--font-en); background: transparent;
   border: 1px solid var(--gold); color: var(--white);
   padding: 1rem 2.4rem; font-size: 0.82rem;
   letter-spacing: 0.3em; cursor: pointer;
   transition: all 0.45s var(--ease);
+  user-select: none; -webkit-user-select: none;
 }
-.btn-enter:hover, .btn-audio:hover {
+.btn-enter:hover, .btn-audio-gate:hover {
   background: var(--gold); color: var(--black);
   letter-spacing: 0.36em;
   box-shadow: 0 0 30px rgba(184,162,122,0.4);
 }
-.btn-audio {
+.btn-audio-gate {
   font-family: var(--font-fa); letter-spacing: 0.05em;
   padding: 1rem 1.8rem; font-size: 0.85rem;
 }
@@ -254,6 +274,18 @@ body {
 [data-scene="chapter-9"]    { --scene-bg: linear-gradient(180deg, #0a1920 0%, #050809 100%); }
 [data-scene="titles"]       { --scene-bg: #000000; }
 [data-scene="post-credit"]  { --scene-bg: radial-gradient(ellipse at center, #0a1418 0%, #000000 82%); }
+
+/* Editable State */
+.editable-active [contenteditable="true"] {
+  outline: 1px dashed var(--gold);
+  background: rgba(184, 162, 122, 0.05);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.editable-active [contenteditable="true"]:focus {
+  outline: 2px solid var(--gold);
+  background: rgba(184, 162, 122, 0.1);
+}
 
 /* Chapter nav */
 .chapter-nav {
@@ -481,6 +513,18 @@ body {
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
 
+<!-- Floating Audio Button (Hidden initially) -->
+<button class="floating-audio" id="floating-audio-btn" aria-label="روشن/خاموش کردن صدا">
+  <svg id="audio-icon-muted" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+  <svg id="audio-icon-playing" viewBox="0 0 24 24" style="display:none;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+</button>
+
+<!-- Audio Element for custom sound -->
+<audio id="bg-audio" loop>
+  <source src="sounds/ambient.mp3" type="audio/mpeg">
+  <source src="sounds/ambient.wav" type="audio/wav">
+</audio>
+
 <!-- ==========================================================
      OPENING GATE
      ========================================================== -->
@@ -494,8 +538,9 @@ body {
       این داستان <strong>ساختگی</strong> است و بر اساس ویژگی‌های شخصیتی <strong>مهندس رضا بهشتی</strong> ساخته شده است.
     </p>
     <div class="gate-controls">
+      <!-- Long press this button for edit mode -->
       <button class="btn-enter" id="enter-btn" type="button">ENTER THE STORY</button>
-      <button class="btn-audio" id="audio-btn" type="button" aria-label="فعال‌سازی صدا">صدا: خاموش</button>
+      <button class="btn-audio-gate" id="audio-btn-gate" type="button" aria-label="فعال‌سازی صدا">صدا: خاموش</button>
     </div>
   </div>
 </section>
@@ -509,7 +554,7 @@ body {
   <!-- ============ PROLOGUE ============ -->
   <section class="scene" id="prologue" data-scene="prologue">
     <div class="scene-visual" aria-hidden="true">
-      <img src="picture/env-rain-night.jpg" alt="" loading="lazy" onerror="this.remove()">
+      <img src="picture/ahura-desk.jpg" alt="" loading="lazy">
     </div>
     <div class="scene-inner">
       <div class="scene-label">PROLOGUE · 23:47</div>
@@ -531,7 +576,7 @@ body {
   <!-- ============ CHAPTER 1 — THE CONTRACT ============ -->
   <section class="scene" id="chapter-1" data-scene="chapter-1">
     <div class="scene-visual" aria-hidden="true">
-      <img src="picture/env-meeting-room.jpg" alt="" loading="lazy" onerror="this.remove()">
+      <img src="picture/ahura-full.jpg" alt="" loading="lazy">
     </div>
     <div class="scene-inner">
       <div class="scene-label">CHAPTER 01 · THE CONTRACT</div>
@@ -553,7 +598,7 @@ body {
   <!-- ============ CHAPTER 2 — SUBJECT 047 ============ -->
   <section class="scene" id="chapter-2" data-scene="chapter-2">
     <div class="scene-visual" aria-hidden="true">
-      <img src="picture/env-server-room.jpg" alt="" loading="lazy" onerror="this.remove()">
+      <img src="picture/ahura-3p.jpg" alt="" loading="lazy">
     </div>
     <div class="scene-inner">
       <div class="scene-label">CHAPTER 02 · SUBJECT 047</div>
@@ -590,6 +635,9 @@ BEHAVIORAL PATTERNS (MEETINGS)
 
   <!-- ============ CHAPTER 3 — THE MAN ============ -->
   <section class="scene" id="chapter-3" data-scene="chapter-3">
+    <div class="scene-visual" aria-hidden="true">
+      <img src="picture/ahura-profile.jpg" alt="" loading="lazy">
+    </div>
     <div class="scene-inner">
       <div class="scene-label">CHAPTER 03 · THE MAN WHO NEVER ERRS</div>
       <h2 class="scene-title">مردی که هرگز اشتباه نمی‌کرد</h2>
@@ -612,7 +660,7 @@ BEHAVIORAL PATTERNS (MEETINGS)
   <!-- ============ CHAPTER 4 — THE ORIGINAL ARCHITECT ============ -->
   <section class="scene" id="chapter-4" data-scene="chapter-4">
     <div class="scene-visual" aria-hidden="true">
-      <img src="picture/env-old-house.jpg" alt="" loading="lazy" onerror="this.remove()">
+      <img src="picture/ahura-hero.jpg" alt="" loading="lazy">
     </div>
     <div class="scene-inner">
       <div class="scene-label">CHAPTER 04 · THE ORIGINAL ARCHITECT</div>
@@ -644,7 +692,7 @@ BEHAVIORAL PATTERNS (MEETINGS)
   <!-- ============ CHAPTER 5 — THE GAME WITHIN ============ -->
   <section class="scene" id="chapter-5" data-scene="chapter-5">
     <div class="scene-visual" aria-hidden="true">
-      <img src="picture/ahura-desk.jpg" alt="" loading="lazy" onerror="this.remove()">
+      <img src="picture/ahura-desk.jpg" alt="" loading="lazy">
     </div>
     <div class="scene-inner">
       <div class="scene-label">CHAPTER 05 · THE GAME WITHIN</div>
@@ -665,6 +713,9 @@ BEHAVIORAL PATTERNS (MEETINGS)
 
   <!-- ============ CHAPTER 6 — THE PRICE OF TRUST ============ -->
   <section class="scene" id="chapter-6" data-scene="chapter-6">
+    <div class="scene-visual" aria-hidden="true">
+      <img src="picture/ahura-silhouette.jpg" alt="" loading="lazy">
+    </div>
     <div class="scene-inner">
       <div class="scene-label">CHAPTER 06 · THE PRICE OF TRUST</div>
       <h2 class="scene-title">بهای اعتماد</h2>
@@ -685,7 +736,7 @@ BEHAVIORAL PATTERNS (MEETINGS)
   <!-- ============ CHAPTER 7 — CLIMAX ============ -->
   <section class="scene" id="chapter-7" data-scene="chapter-7">
     <div class="scene-visual" aria-hidden="true">
-      <img src="picture/env-gala-hall.jpg" alt="" loading="lazy" onerror="this.remove()">
+      <img src="picture/ahura-full.jpg" alt="" loading="lazy">
     </div>
     <div class="scene-inner">
       <div class="scene-label">CHAPTER 07 · CLIMAX — OPENING NIGHT</div>
@@ -708,7 +759,7 @@ BEHAVIORAL PATTERNS (MEETINGS)
   <!-- ============ CHAPTER 8 — AFTERMATH ============ -->
   <section class="scene" id="chapter-8" data-scene="chapter-8">
     <div class="scene-visual" aria-hidden="true">
-      <img src="picture/env-workspace.jpg" alt="" loading="lazy" onerror="this.remove()">
+      <img src="picture/ahura-hero.jpg" alt="" loading="lazy">
     </div>
     <div class="scene-inner">
       <div class="scene-label">CHAPTER 08 · AFTERMATH</div>
@@ -730,7 +781,7 @@ BEHAVIORAL PATTERNS (MEETINGS)
   <!-- ============ CHAPTER 9 — PHASE TWO ============ -->
   <section class="scene" id="chapter-9" data-scene="chapter-9">
     <div class="scene-visual" aria-hidden="true">
-      <img src="picture/ahura-closeup.jpg" alt="" loading="lazy" onerror="this.remove()">
+      <img src="picture/ahura-closeup.jpg" alt="" loading="lazy">
     </div>
     <div class="scene-inner">
       <div class="scene-label">CHAPTER 09 · PHASE TWO</div>
@@ -803,88 +854,96 @@ BEHAVIORAL PATTERNS (MEETINGS)
    THE ARCHITECT — Scripts
    ============================================================ */
 
-/* ---------- Audio Controller (Web Audio API ambient) ---------- */
-class AudioController {
-  constructor() {
-    this.ctx = null;
-    this.enabled = false;
-    this.nodes = [];
-  }
-  async toggle() {
-    if (!this.ctx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return false;
-      this.ctx = new AC();
-    }
-    if (this.ctx.state === 'suspended') {
-      try { await this.ctx.resume(); } catch(e) {}
-    }
-    if (this.enabled) { this.stop(); } else { this.start(); }
-    return this.enabled;
-  }
-  start() {
-    try {
-      // Rain-like filtered noise
-      const bufferSize = 2 * this.ctx.sampleRate;
-      const buf = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
-      const noise = this.ctx.createBufferSource();
-      noise.buffer = buf; noise.loop = true;
+/* ---------- 1. Audio Logic ---------- */
+const audioEl = document.getElementById('bg-audio');
+const gateAudioBtn = document.getElementById('audio-btn-gate');
+const floatingAudioBtn = document.getElementById('floating-audio-btn');
+const iconMuted = document.getElementById('audio-icon-muted');
+const iconPlaying = document.getElementById('audio-icon-playing');
+let isAudioPlaying = false;
 
-      const filt = this.ctx.createBiquadFilter();
-      filt.type = 'lowpass'; filt.frequency.value = 780; filt.Q.value = 0.6;
-
-      const noiseGain = this.ctx.createGain();
-      noiseGain.gain.value = 0.07;
-
-      noise.connect(filt); filt.connect(noiseGain); noiseGain.connect(this.ctx.destination);
-      noise.start();
-
-      // Low drone
-      const drone = this.ctx.createOscillator();
-      drone.type = 'sine'; drone.frequency.value = 55;
-      const droneGain = this.ctx.createGain();
-      droneGain.gain.value = 0.025;
-      drone.connect(droneGain); droneGain.connect(this.ctx.destination);
-      drone.start();
-
-      this.nodes = [noise, drone];
-      this.enabled = true;
-    } catch(e) { this.enabled = false; }
-  }
-  stop() {
-    this.nodes.forEach(n => { try { n.stop(); } catch(e){} });
-    this.nodes = [];
-    this.enabled = false;
+function toggleAudio() {
+  if (isAudioPlaying) {
+    audioEl.pause();
+    gateAudioBtn.textContent = 'صدا: خاموش';
+    iconMuted.style.display = 'block';
+    iconPlaying.style.display = 'none';
+    isAudioPlaying = false;
+  } else {
+    audioEl.play().then(() => {
+      gateAudioBtn.textContent = 'صدا: روشن';
+      iconMuted.style.display = 'none';
+      iconPlaying.style.display = 'block';
+      isAudioPlaying = true;
+    }).catch((err) => {
+      console.warn("Audio file not found or autoplay blocked. Please check sounds/ambient.mp3", err);
+      alert("فایل صوتی یافت نشد. لطفاً یک فایل به نام ambient.mp3 در پوشه sounds قرار دهید.");
+    });
   }
 }
 
-const audioCtrl = new AudioController();
+gateAudioBtn.addEventListener('click', toggleAudio);
+floatingAudioBtn.addEventListener('click', toggleAudio);
 
-/* ---------- Gate ---------- */
-const gate = document.getElementById('gate');
-const story = document.getElementById('story');
+/* ---------- 2. Admin Edit Mode (Long Press) ---------- */
 const enterBtn = document.getElementById('enter-btn');
-const audioBtn = document.getElementById('audio-btn');
+const ADMIN_PASSWORD = "V4861BFU";
+let pressTimer;
+let isEditMode = false;
+let isLongPress = false; // To prevent opening story if they just held the button
 
-audioBtn.addEventListener('click', async () => {
-  const on = await audioCtrl.toggle();
-  audioBtn.textContent = on ? 'صدا: روشن' : 'صدا: خاموش';
-});
+const startPress = (e) => {
+  isLongPress = false;
+  pressTimer = setTimeout(() => {
+    isLongPress = true;
+    const pass = prompt("رمز عبور برای ویرایش داستان:");
+    if (pass === ADMIN_PASSWORD) {
+      isEditMode = true;
+      document.body.classList.add('editable-active');
+      alert("حالت ویرایش فعال شد.\nاکنون می‌توانید روی متن‌ها کلیک کنید و آن‌ها را تغییر دهید.\n(برای ذخیره دائمی، کد را از Inspect کپی کنید یا از Local Storage استفاده کنید)");
+      
+      // Enable editing on all text elements
+      document.querySelectorAll('.scene-title, .scene-body p, .key-quote, .mono-block, .pc-line, .gate-tagline, .gate-disclaimer').forEach(el => {
+        el.setAttribute('contenteditable', 'true');
+      });
+    } else if (pass !== null) {
+      alert("رمز اشتباه است.");
+    }
+  }, 800); // 800ms hold
+};
 
-enterBtn.addEventListener('click', () => {
-  story.hidden = false;
+const cancelPress = () => clearTimeout(pressTimer);
+
+enterBtn.addEventListener('mousedown', startPress);
+enterBtn.addEventListener('touchstart', startPress);
+enterBtn.addEventListener('mouseup', cancelPress);
+enterBtn.addEventListener('mouseleave', cancelPress);
+enterBtn.addEventListener('touchend', cancelPress);
+
+// Normal Gate entrance
+enterBtn.addEventListener('click', (e) => {
+  if (isLongPress) {
+    e.preventDefault();
+    return; // Don't enter story if they were just editing
+  }
+  
+  const gate = document.getElementById('gate');
+  const story = document.getElementById('story');
+  
   gate.classList.add('exiting');
+  story.hidden = false;
+  
   setTimeout(() => {
     gate.style.display = 'none';
     window.scrollTo({ top: 0, behavior: 'instant' });
+    floatingAudioBtn.classList.add('visible'); // Show floating audio btn
     initObservers();
     updateActiveNav();
   }, 1400);
 });
 
-/* ---------- Chapter Nav ---------- */
+
+/* ---------- 3. Chapter Nav ---------- */
 const chapterLabels = [
   ['prologue',    'پرولوگ'],
   ['chapter-1',   'قرارداد'],
@@ -928,7 +987,7 @@ function updateActiveNav() {
   });
 }
 
-/* ---------- Intersection Observer ---------- */
+/* ---------- 4. Intersection Observer ---------- */
 let sceneObserver = null;
 let triggered = new WeakSet();
 
@@ -954,7 +1013,7 @@ function initObservers() {
   window.addEventListener('scroll', updateActiveNav, { passive: true });
 }
 
-/* ---------- Climax Sequence ---------- */
+/* ---------- 5. Climax Sequence ---------- */
 function triggerClimax(scene) {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const overlay = scene.querySelector('#countdown');
@@ -1005,7 +1064,7 @@ function triggerClimax(scene) {
   }, countdownEnd + 200 + 2000);
 }
 
-/* ---------- Post-Credit Reveal ---------- */
+/* ---------- 6. Post-Credit Reveal ---------- */
 function triggerPostCredit(scene) {
   const lines = scene.querySelectorAll('.pc-line');
   const final = scene.querySelector('#pc-final');
@@ -1017,12 +1076,17 @@ function triggerPostCredit(scene) {
   }
 }
 
-/* ---------- Keyboard Navigation ---------- */
+/* ---------- 7. Keyboard Navigation ---------- */
 document.addEventListener('keydown', (e) => {
-  if (story.hidden) {
+  if (document.getElementById('story').hidden) {
     if (e.key === 'Enter') { e.preventDefault(); enterBtn.click(); }
     return;
   }
+  
+  if (isEditMode && e.target.hasAttribute('contenteditable')) {
+    return; // Don't navigate if editing text
+  }
+
   const scenes = [...document.querySelectorAll('.scene')];
   const scrollMid = window.scrollY + window.innerHeight * 0.5;
   let current = 0;
