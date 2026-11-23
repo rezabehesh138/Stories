@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE ARCHITECT — معمار</title>
+<meta name="description" content="THE ARCHITECT — تجربه سینمایی تعاملی. داستان ساختگی است و بر اساس ویژگی‌های شخصیتی مهندس رضا بهشتی ساخته شده است.">
+<meta name="theme-color" content="#050809">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Vazirmatn:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   THE ARCHITECT — Cinematic Interactive Experience
+   ============================================================ */
+:root {
+  --navy:   #101A20;
+  --teal:   #264641;
+  --gold:   #B8A27A;
+  --silver: #D9E0E1;
+  --black:  #050809;
+  --white:  #F2F3F1;
+  --font-fa: 'Vazirmatn', Tahoma, sans-serif;
+  --font-en: 'Cormorant Garamond', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-fa);
+  background: var(--black);
+  color: var(--white);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.85;
+}
+
+/* ============================================================
+   FIXED OVERLAYS — Film Grain & Vignette
+   ============================================================ */
+.grain {
+  position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  opacity: 0.055; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.vignette {
+  position: fixed; inset: 0; z-index: 9998; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.72) 100%);
+}
+
+/* ============================================================
+   OPENING GATE
+   ============================================================ */
+.gate {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--black);
+  display: grid; place-items: center;
+  padding: 2rem; overflow: hidden;
+  transition: opacity 1.4s var(--ease);
+}
+.gate::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(38,70,65,0.45) 0%, transparent 55%),
+    radial-gradient(circle at 80% 75%, rgba(184,162,122,0.18) 0%, transparent 55%);
+  animation: gate-drift 14s ease-in-out infinite alternate;
+}
+@keyframes gate-drift {
+  0%   { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1.12) rotate(2deg); }
+}
+.gate.exiting { opacity: 0; pointer-events: none; }
+
+.gate-content { position: relative; text-align: center; max-width: 780px; z-index: 1; }
+.gate-kicker {
+  font-family: var(--font-en); font-size: 0.72rem; letter-spacing: 0.5em;
+  color: var(--silver); opacity: 0; direction: ltr;
+  animation: fade-up 1.4s 0.3s forwards var(--ease);
+}
+.gate-title-en {
+  font-family: var(--font-en); font-weight: 300;
+  font-size: clamp(2.4rem, 8vw, 6rem);
+  color: var(--white); margin: 1.2rem 0 0.4rem;
+  letter-spacing: 0.25em; direction: ltr;
+  opacity: 0;
+  animation: title-reveal 2.4s 1s forwards var(--ease);
+}
+.gate-title-fa {
+  font-family: var(--font-fa); font-weight: 300;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  color: var(--gold); letter-spacing: 0.3em;
+  margin-bottom: 1.8rem; opacity: 0;
+  animation: fade-up 1.4s 2.4s forwards var(--ease);
+}
+.gate-tagline {
+  font-size: clamp(0.92rem, 1.4vw, 1.08rem);
+  color: var(--silver); font-weight: 300;
+  max-width: 520px; margin: 0 auto 2.2rem; line-height: 2.1;
+  opacity: 0; animation: fade-up 1.4s 3s forwards var(--ease);
+}
+.gate-disclaimer {
+  font-size: 0.82rem; color: var(--silver);
+  max-width: 520px; margin: 0 auto 2rem; line-height: 1.9;
+  padding: 1rem 1.4rem; opacity: 0;
+  border-top: 1px solid rgba(184,162,122,0.3);
+  border-bottom: 1px solid rgba(184,162,122,0.3);
+  animation: fade-up 1.4s 3.5s forwards var(--ease);
+}
+.gate-disclaimer strong { color: var(--gold); font-weight: 500; }
+
+.gate-controls {
+  display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+  opacity: 0; animation: fade-up 1.4s 4s forwards var(--ease);
+}
+.btn-enter, .btn-audio {
+  font-family: var(--font-en); background: transparent;
+  border: 1px solid var(--gold); color: var(--white);
+  padding: 1rem 2.4rem; font-size: 0.82rem;
+  letter-spacing: 0.3em; cursor: pointer;
+  transition: all 0.45s var(--ease);
+}
+.btn-enter:hover, .btn-audio:hover {
+  background: var(--gold); color: var(--black);
+  letter-spacing: 0.36em;
+  box-shadow: 0 0 30px rgba(184,162,122,0.4);
+}
+.btn-audio {
+  font-family: var(--font-fa); letter-spacing: 0.05em;
+  padding: 1rem 1.8rem; font-size: 0.85rem;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes title-reveal {
+  from { opacity: 0; letter-spacing: 0.55em; filter: blur(10px); }
+  to   { opacity: 1; letter-spacing: 0.25em; filter: blur(0); }
+}
+
+/* ============================================================
+   STORY / SCENES
+   ============================================================ */
+.story { position: relative; }
+
+.scene {
+  min-height: 100vh; position: relative;
+  display: flex; align-items: center;
+  padding: 5rem 2rem; overflow: hidden;
+  background: var(--black);
+}
+.scene::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--scene-bg, var(--black)); z-index: 0;
+}
+.scene-inner {
+  max-width: 1080px; margin: 0 auto; width: 100%;
+  position: relative; z-index: 2;
+}
+.scene-label {
+  font-family: var(--font-en); font-size: 0.72rem;
+  letter-spacing: 0.4em; color: var(--gold);
+  margin-bottom: 1.2rem; text-align: right; direction: ltr;
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.9s var(--ease);
+}
+.scene.in-view .scene-label { opacity: 1; transform: translateY(0); }
+
+.scene-title {
+  font-family: var(--font-fa); font-weight: 300;
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  color: var(--white); margin-bottom: 2.4rem;
+  letter-spacing: 0.04em; line-height: 1.22;
+  opacity: 0; transform: translateY(30px);
+  transition: all 1s 0.1s var(--ease);
+}
+.scene.in-view .scene-title { opacity: 1; transform: translateY(0); }
+
+.scene-body {
+  font-size: clamp(1rem, 1.25vw, 1.12rem);
+  line-height: 2.05; color: var(--silver);
+  font-weight: 300; max-width: 760px;
+}
+.scene-body > * {
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.9s var(--ease);
+}
+.scene.in-view .scene-body > * { opacity: 1; transform: translateY(0); }
+.scene-body > *:nth-child(1) { transition-delay: 0.2s; }
+.scene-body > *:nth-child(2) { transition-delay: 0.32s; }
+.scene-body > *:nth-child(3) { transition-delay: 0.44s; }
+.scene-body > *:nth-child(4) { transition-delay: 0.56s; }
+.scene-body > *:nth-child(5) { transition-delay: 0.68s; }
+.scene-body > *:nth-child(n+6) { transition-delay: 0.8s; }
+.scene-body p { margin-bottom: 1.4rem; }
+
+.key-quote {
+  font-family: var(--font-fa); font-size: clamp(1.15rem, 1.9vw, 1.55rem);
+  font-weight: 400; color: var(--gold);
+  border-right: 2px solid var(--gold);
+  padding: 0.5rem 1.4rem; margin: 1.8rem 0;
+  line-height: 1.85;
+}
+.en-code {
+  font-family: var(--font-mono); color: var(--silver);
+  background: rgba(38,70,65,0.35); padding: 0.15rem 0.55rem;
+  border-radius: 2px; font-size: 0.9em;
+  direction: ltr; display: inline-block;
+}
+.mono-block {
+  font-family: var(--font-mono); font-size: 0.9rem;
+  color: var(--silver); background: rgba(5,8,9,0.7);
+  border: 1px solid rgba(217,224,225,0.15);
+  padding: 1.4rem; margin: 1.6rem 0;
+  direction: ltr; text-align: left; line-height: 1.85;
+  white-space: pre-wrap;
+}
+.mono-block .hl { color: var(--gold); }
+.mono-block .danger { color: #ff5a76; }
+.mono-block .dim { color: rgba(217,224,225,0.55); }
+
+/* Scene Visuals */
+.scene-visual {
+  position: absolute; inset: 0; z-index: 1;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--black) 0%, var(--teal) 55%, var(--black) 100%);
+}
+.scene-visual img {
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0.42; filter: contrast(1.08) brightness(0.72);
+  transform: scale(1.08);
+  transition: transform 8s linear;
+}
+.scene.in-view .scene-visual img { transform: scale(1.02); }
+.scene-visual::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to left, rgba(5,8,9,0.6) 0%, rgba(5,8,9,0.88) 65%, var(--black) 100%);
+}
+
+/* Scene-specific palettes */
+[data-scene="prologue"]     { --scene-bg: radial-gradient(ellipse at top right, #0a1920 0%, #050809 70%); }
+[data-scene="chapter-1"]    { --scene-bg: linear-gradient(180deg, #0a1418 0%, #101A20 100%); }
+[data-scene="chapter-2"]    { --scene-bg: linear-gradient(180deg, #050809 0%, #0a1418 100%); }
+[data-scene="chapter-3"]    { --scene-bg: radial-gradient(ellipse at top left, rgba(184,162,122,0.09) 0%, #0a1418 65%); }
+[data-scene="chapter-4"]    { --scene-bg: radial-gradient(ellipse at center, rgba(184,162,122,0.11) 0%, #0a0e10 72%); }
+[data-scene="chapter-5"]    { --scene-bg: linear-gradient(180deg, #050809 0%, #264641 100%); }
+[data-scene="chapter-6"]    { --scene-bg: linear-gradient(180deg, #0a0a0a 0%, #050809 100%); }
+[data-scene="chapter-7"]    { --scene-bg: radial-gradient(ellipse at center, #1a2a30 0%, #050809 82%); }
+[data-scene="chapter-8"]    { --scene-bg: linear-gradient(180deg, #0a1418 0%, #101A20 55%, #050809 100%); }
+[data-scene="chapter-9"]    { --scene-bg: linear-gradient(180deg, #0a1920 0%, #050809 100%); }
+[data-scene="titles"]       { --scene-bg: #000000; }
+[data-scene="post-credit"]  { --scene-bg: radial-gradient(ellipse at center, #0a1418 0%, #000000 82%); }
+
+/* Chapter nav */
+.chapter-nav {
+  position: fixed; left: 1.75rem; top: 50%;
+  transform: translateY(-50%); z-index: 100;
+  display: flex; flex-direction: column; gap: 0.9rem;
+}
+.chapter-nav button {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(217,224,225,0.22);
+  border: 1px solid rgba(217,224,225,0.32);
+  padding: 0; cursor: pointer;
+  transition: all 0.4s var(--ease);
+  position: relative;
+}
+.chapter-nav button::after {
+  content: attr(data-label);
+  position: absolute; left: 20px; top: 50%;
+  transform: translateY(-50%) translateX(-6px);
+  font-family: var(--font-fa); font-size: 0.7rem;
+  color: var(--silver); white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: all 0.3s var(--ease);
+}
+.chapter-nav button:hover::after {
+  opacity: 1; transform: translateY(-50%) translateX(0);
+}
+.chapter-nav button:hover,
+.chapter-nav button.active {
+  background: var(--gold); border-color: var(--gold);
+  transform: scale(1.45);
+  box-shadow: 0 0 14px rgba(184,162,122,0.55);
+}
+
+/* Scroll hint */
+.scroll-hint {
+  position: absolute; bottom: 2rem; left: 50%;
+  transform: translateX(-50%);
+  color: var(--silver); font-size: 0.72rem;
+  letter-spacing: 0.2em; opacity: 0.45;
+  animation: float-hint 2.6s ease-in-out infinite;
+  z-index: 3; text-align: center;
+}
+.scroll-hint::after {
+  content: '↓'; display: block;
+  font-size: 1.1rem; margin-top: 0.35rem;
+}
+@keyframes float-hint {
+  0%,100% { transform: translateX(-50%) translateY(0); opacity: 0.45; }
+  50%     { transform: translateX(-50%) translateY(9px); opacity: 0.8; }
+}
+
+/* ============================================================
+   CLIMAX — Countdown + Glitch
+   ============================================================ */
+.countdown-overlay {
+  position: absolute; inset: 0; z-index: 6;
+  display: grid; place-items: center;
+  background: rgba(5,8,9,0.97);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.countdown-overlay.active { opacity: 1; }
+.countdown-num {
+  font-family: var(--font-mono); font-weight: 300;
+  font-size: clamp(5rem, 22vw, 16rem);
+  color: var(--white);
+  text-shadow: 0 0 50px rgba(184,162,122,0.55);
+  position: absolute;
+  opacity: 0; transform: scale(0.6);
+  transition: opacity 0.15s, transform 0.18s;
+  direction: ltr;
+}
+.countdown-num.show { opacity: 1; transform: scale(1); }
+.countdown-num.hide { opacity: 0; transform: scale(1.6); }
+
+.glitch-text {
+  position: absolute; inset: 0; z-index: 7;
+  display: grid; place-items: center;
+  background: #000; padding: 2rem;
+  font-family: var(--font-en); font-weight: 500;
+  font-size: clamp(1.4rem, 4vw, 2.8rem);
+  letter-spacing: 0.15em; color: var(--white);
+  text-align: center; direction: ltr;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.glitch-text.active { opacity: 1; animation: glitch 0.35s steps(2) 3; }
+.glitch-text.active::before,
+.glitch-text.active::after {
+  content: attr(data-text);
+  position: absolute; inset: 0;
+  display: grid; place-items: center; padding: 2rem;
+}
+.glitch-text.active::before {
+  color: #ff0040;
+  clip-path: polygon(0 28%, 100% 28%, 100% 48%, 0 48%);
+  animation: glitch-a 0.22s infinite; transform: translateX(-3px);
+}
+.glitch-text.active::after {
+  color: #00ffe1;
+  clip-path: polygon(0 58%, 100% 58%, 100% 78%, 0 78%);
+  animation: glitch-a 0.18s infinite reverse; transform: translateX(3px);
+}
+@keyframes glitch {
+  0%,100% { text-shadow: 0 0 22px rgba(184,162,122,0.35); }
+  50%     { text-shadow: -2px 0 #ff0040, 2px 0 #00ffe1; }
+}
+@keyframes glitch-a {
+  0%   { transform: translateX(-3px); }
+  50%  { transform: translateX(3px); }
+  100% { transform: translateX(-3px); }
+}
+[data-scene="chapter-7"] .scene-body { opacity: 0; transition: opacity 1.2s var(--ease); }
+[data-scene="chapter-7"].ready .scene-body { opacity: 1; }
+
+/* ============================================================
+   TITLES
+   ============================================================ */
+.titles-scene {
+  min-height: 100vh; display: grid; place-items: center;
+  background: #000; text-align: center; padding: 2rem;
+}
+.titles-line {
+  font-family: var(--font-en); font-weight: 300;
+  font-size: clamp(1.15rem, 3vw, 2.1rem);
+  letter-spacing: 0.18em; color: var(--white);
+  line-height: 2; direction: ltr; margin: 0.5rem 0;
+  opacity: 0; transform: translateY(15px);
+  transition: all 1.2s var(--ease);
+}
+.scene.in-view .titles-line { opacity: 1; transform: translateY(0); }
+.scene.in-view .titles-line:nth-child(2) { transition-delay: 0.8s; }
+.scene.in-view .titles-line:nth-child(3) { transition-delay: 1.6s; }
+.scene.in-view .titles-line:nth-child(4) { transition-delay: 2.4s; }
+.titles-line.gold { color: var(--gold); }
+.titles-line.small {
+  font-size: clamp(0.75rem, 1.4vw, 0.95rem);
+  color: var(--silver); letter-spacing: 0.32em; opacity: 0;
+}
+.scene.in-view .titles-line.small { opacity: 0.7; }
+.titles-line.small:nth-child(4) { transition-delay: 2.4s; }
+
+/* ============================================================
+   POST-CREDIT
+   ============================================================ */
+.post-credit {
+  min-height: 100vh; display: grid; place-items: center;
+  background: #000; text-align: center; padding: 2rem;
+}
+.pc-monitor-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem; max-width: 480px; margin: 0 auto 3rem;
+  opacity: 0.65;
+}
+.pc-monitor {
+  aspect-ratio: 16/9;
+  background: linear-gradient(135deg, #0a1920, #050809);
+  border: 1px solid rgba(217,224,225,0.1);
+  position: relative; overflow: hidden;
+}
+.pc-monitor::after {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(217,224,225,0.035) 2px, rgba(217,224,225,0.035) 3px);
+  animation: scan 4.5s linear infinite;
+}
+@keyframes scan { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
+
+.pc-dialog {
+  font-family: var(--font-fa);
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  color: var(--silver); line-height: 2.2;
+  max-width: 620px; margin: 0 auto 2rem; text-align: center;
+}
+.pc-line {
+  opacity: 0; transform: translateY(12px);
+  transition: all 1s var(--ease);
+  margin-bottom: 0.6rem;
+}
+.pc-line.visible { opacity: 1; transform: translateY(0); }
+.pc-line.speaker { color: var(--gold); font-size: 0.85em; letter-spacing: 0.05em; opacity: 0.85; }
+
+.pc-final {
+  font-family: var(--font-mono);
+  color: #ff5a76; font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+  letter-spacing: 0.15em; margin-top: 3rem;
+  opacity: 0; transition: opacity 2s ease;
+  direction: ltr;
+}
+.pc-final.visible { opacity: 1; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  .chapter-nav { left: 0.6rem; gap: 0.65rem; }
+  .chapter-nav button { width: 6px; height: 6px; }
+  .chapter-nav button::after { display: none; }
+  .scene { padding: 3.5rem 1.25rem; }
+  .key-quote { font-size: 1rem; padding: 0.4rem 1rem; }
+  .mono-block { font-size: 0.72rem; padding: 1rem; overflow-x: auto; }
+  .gate-controls { flex-direction: column; align-items: stretch; max-width: 300px; margin: 0 auto; }
+  .pc-monitor-grid { grid-template-columns: repeat(2, 1fr); }
+  .scroll-hint { font-size: 0.65rem; }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .glitch-text.active, .glitch-text.active::before, .glitch-text.active::after { animation: none !important; }
+  .scene-body > *, .scene-title, .scene-label { opacity: 1 !important; transform: none !important; }
+  [data-scene="chapter-7"] .scene-body { opacity: 1 !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- ==========================================================
+     OPENING GATE
+     ========================================================== -->
+<section class="gate" id="gate" aria-label="صفحه ورودی">
+  <div class="gate-content">
+    <p class="gate-kicker">A CINEMATIC EXPERIENCE</p>
+    <h1 class="gate-title-en">THE ARCHITECT</h1>
+    <p class="gate-title-fa">معمار</p>
+    <p class="gate-tagline">بعضی‌ها دنیا را همان‌طور که هست می‌بینند؛ بعضی‌ها می‌فهمند چطور ساخته شده است.</p>
+    <p class="gate-disclaimer">
+      این داستان <strong>ساختگی</strong> است و بر اساس ویژگی‌های شخصیتی <strong>مهندس رضا بهشتی</strong> ساخته شده است.
+    </p>
+    <div class="gate-controls">
+      <button class="btn-enter" id="enter-btn" type="button">ENTER THE STORY</button>
+      <button class="btn-audio" id="audio-btn" type="button" aria-label="فعال‌سازی صدا">صدا: خاموش</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================================
+     STORY
+     ========================================================== -->
+<main class="story" id="story" hidden>
+  <nav class="chapter-nav" id="chapter-nav" aria-label="ناوبری فصل‌ها"></nav>
+
+  <!-- ============ PROLOGUE ============ -->
+  <section class="scene" id="prologue" data-scene="prologue">
+    <div class="scene-visual" aria-hidden="true">
+      <img src="picture/env-rain-night.jpg" alt="" loading="lazy" onerror="this.remove()">
+    </div>
+    <div class="scene-inner">
+      <div class="scene-label">PROLOGUE · 23:47</div>
+      <h2 class="scene-title">آدم‌هایی که دیده نمی‌شوند</h2>
+      <div class="scene-body">
+        <p>ساعت ۲۳:۴۷ بود. باران آرامی روی شیشه‌های ساختمان‌های بلند شهر می‌بارید. در طبقهٔ بیست‌وهفتم یک ساختمان اداری، چراغ یک دفتر هنوز روشن بود.</p>
+        <p>اهورا پشت میزش نشسته بود؛ کت‌وشلوارش را درآورده، آستین‌های پیراهنش را بالا زده و میان چند نمایشگر روشن جابه‌جا می‌شد. روی یکی، نقشهٔ یک مدار؛ روی دیگری، چند خط کد؛ و روی سومی، نمودار رفتار مشتریان یک شرکت.</p>
+        <p>تلفنش روشن شد — پیام سارا، همکارش: <span class="en-code">«هنوز شرکت هستی؟ ساعت از یازده گذشته!»</span> لبخند کوتاهی زد و پاسخ داد: <span class="en-code">«دارم یه چیزی رو تموم می‌کنم.»</span></p>
+        <p>اما واقعیت این بود که او هیچ‌وقت فقط یک چیز را تمام نمی‌کرد. همیشه ایدهٔ دیگری بود؛ مسئلهٔ دیگری برای حل کردن.</p>
+        <blockquote class="key-quote">
+          «چرا بعضی آدم‌ها با توانایی معمولی به جایگاه‌های بزرگ می‌رسند؟ و مهم‌تر از همه — قدرت واقعی دقیقاً کجاست؟»
+        </blockquote>
+        <p>او هنوز جواب این سؤال‌ها را نمی‌دانست. اما به‌زودی می‌فهمید که تمام این سؤال‌ها، بخشی از یک بازی بزرگ‌ترند.</p>
+      </div>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ CHAPTER 1 — THE CONTRACT ============ -->
+  <section class="scene" id="chapter-1" data-scene="chapter-1">
+    <div class="scene-visual" aria-hidden="true">
+      <img src="picture/env-meeting-room.jpg" alt="" loading="lazy" onerror="this.remove()">
+    </div>
+    <div class="scene-inner">
+      <div class="scene-label">CHAPTER 01 · THE CONTRACT</div>
+      <h2 class="scene-title">قرارداد</h2>
+      <div class="scene-body">
+        <p>صبح دوشنبه، جلسهٔ معرفی محصول جدید برگزار شد. مهندس فرهاد راد — مدیرعامل — آرام و مسلط سخن می‌گفت. یکی از سرمایه‌گذاران پرسید: «مهم‌ترین عامل موفقیت یک محصول در این بازار چیست؟»</p>
+        <p>کیفیت، قیمت، خدمات، اعتبار، شبکهٔ توزیع. اهورا سکوت کرد. مدیرعامل متوجه شد.</p>
+        <p><span class="en-code">«نظر شما چیه؟»</span></p>
+        <blockquote class="key-quote">
+          «مهندسی محصول بدون مهندسی تصمیم خرید، ناقصه.»
+        </blockquote>
+        <p>سکوت برقرار شد. بعد از جلسه، مهندس راد پوشه‌ای روی میز گذاشت. نام شرکت: <span class="en-code">VANTAGE SYSTEMS</span> — سرمایه‌گذاری‌های عظیم در هوش مصنوعی و تحلیل داده.</p>
+        <p><span class="en-code">«چه زمانی باید ملاقات کنم؟»</span> — <span class="en-code">«فردا.»</span></p>
+      </div>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ CHAPTER 2 — SUBJECT 047 ============ -->
+  <section class="scene" id="chapter-2" data-scene="chapter-2">
+    <div class="scene-visual" aria-hidden="true">
+      <img src="picture/env-server-room.jpg" alt="" loading="lazy" onerror="this.remove()">
+    </div>
+    <div class="scene-inner">
+      <div class="scene-label">CHAPTER 02 · SUBJECT 047</div>
+      <h2 class="scene-title">سوژهٔ شمارهٔ صفر</h2>
+      <div class="scene-body">
+        <p>آن شب به خانه نرفت. تمام اطلاعات عمومی Vantage Systems را بررسی کرد. همه‌چیز بیش از حد منظم بود. در میان فایل‌های قدیمی، نام یک مؤسسه ظاهر شد: <span class="en-code">ORION RESEARCH GROUP</span> — و پروژه‌ای به نام <span class="en-code">GENESIS</span>.</p>
+        <p>صفحه‌ای باز شد: فهرستی طولانی از افراد؛ با مشخصات رفتاری، نقاط قوت، ضعف و احتمال تصمیم‌گیری.</p>
+        <div class="mono-block">SEARCH QUERY: <span class="hl">"AHURA"</span>
+─────────────────────────
+<span class="hl">SUBJECT 047</span>
+─────────────────────────
+AGE · EDUCATION · TECHNICAL INTERESTS
+NEGOTIATION STYLE · COMPETITIVE RESPONSE
+BEHAVIORAL PATTERNS (MEETINGS)
+─────────────────────────
+<span class="dim">PSYCHOLOGICAL ANALYSIS:</span>
+فرد دارای انگیزه بالای پیشرفت، حساسیت نسبت
+به اعتبار حرفه‌ای و تمایل شدید به استقلال.
+در صورت مواجهه با محدودیت، به‌جای پذیرش
+شرایط، به دنبال طراحی مسیر جایگزین خواهد بود.
+─────────────────────────
+<span class="dim">ANALYST NOTE:</span>
+«این فرد در برابر تلاش مستقیم برای کنترل
+مقاومت خواهد کرد. پیشنهاد می‌شود به‌جای
+محدود کردن او، شرایطی فراهم شود که تصور
+کند خودش مسیر پیشرفت را انتخاب کرده است.»
+─────────────────────────
+» او باید احساس کند که معمار بازی است. «</div>
+        <p>اهورا به صندلی تکیه داد. برای اولین بار احساس کرد شاید در حال بررسی یک سیستم نیست. شاید خودش بخشی از آن سیستم باشد.</p>
+      </div>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ CHAPTER 3 — THE MAN ============ -->
+  <section class="scene" id="chapter-3" data-scene="chapter-3">
+    <div class="scene-inner">
+      <div class="scene-label">CHAPTER 03 · THE MAN WHO NEVER ERRS</div>
+      <h2 class="scene-title">مردی که هرگز اشتباه نمی‌کرد</h2>
+      <div class="scene-body">
+        <p>سه روز بعد، دفتر اردشیر پارسا — مدیرعامل Vantage. مردی که نامش در فهرست ثروتمندترین سرمایه‌گذاران فناوری دیده می‌شد. نه صدای بلندی داشت، نه رفتار تهاجمی. قدرتش در آرامش او بود. دو فنجان قهوه روی میز.</p>
+        <p><span class="en-code">«شنیدم دربارهٔ پروژهٔ GENESIS کنجکاو شدی.»</span></p>
+        <p><span class="en-code">«چرا اسم من توی پرونده‌های شماست؟»</span></p>
+        <p><span class="en-code">«چون ما آدم‌ها رو بررسی می‌کنیم.»</span></p>
+        <blockquote class="key-quote">
+          «ما نمی‌تونیم آدم‌ها رو پیش‌بینی کنیم. اما می‌تونیم احتمال رفتار اون‌ها رو محاسبه کنیم. تفاوت بزرگیه.»
+        </blockquote>
+        <p>اردشیر پوشه‌ای به سمتش هل داد: <span class="en-code">«می‌خوام بخشی از تیمی باشی که آیندهٔ این فناوری رو می‌سازه.»</span></p>
+        <p><span class="en-code">«چرا من؟»</span> — <span class="en-code">«چون تو فقط دنبال جواب سؤال‌ها نیستی. دوست داری سؤال‌های بهتری طراحی کنی.»</span></p>
+        <p>اهورا برای لحظه‌ای احساس کرد این مرد بیش از حد او را می‌شناسد.</p>
+      </div>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ CHAPTER 4 — THE ORIGINAL ARCHITECT ============ -->
+  <section class="scene" id="chapter-4" data-scene="chapter-4">
+    <div class="scene-visual" aria-hidden="true">
+      <img src="picture/env-old-house.jpg" alt="" loading="lazy" onerror="this.remove()">
+    </div>
+    <div class="scene-inner">
+      <div class="scene-label">CHAPTER 04 · THE ORIGINAL ARCHITECT</div>
+      <h2 class="scene-title">معمار اولیه</h2>
+      <div class="scene-body">
+        <p>هورام او را به دکتر الیاس بهرامی معرفی کرد — دانشمند و مهندس علوم شناختی، طراح اولیهٔ الگوریتم GENESIS. خانه‌ای قدیمی در حاشیهٔ شهر، پر از کتاب و نمایشگرهای قدیمی.</p>
+        <p><span class="en-code">«بالاخره فرستادنش سراغ من.»</span> — <span class="en-code">«من رو کسی نفرستاده.»</span> — وارن خندید: <span class="en-code">«این دقیقاً همون چیزیه که اونا دوست دارن باور کنی.»</span></p>
+        <p>روی نمایشگر، نمودارهایی از رفتار انسان‌ها ظاهر شد. «آدم‌ها الگو دارن. حتی زمانی که فکر می‌کنن دارن آزادانه انتخاب می‌کنن.»</p>
+        <blockquote class="key-quote">
+          «پروژه‌ای که میلیاردها دلار ارزش پیدا کرده باشه، دیگه متعلق به سازنده‌اش نیست.»
+        </blockquote>
+        <p>سپس پوشهٔ دیگری را باز کرد. عنوان پرونده:</p>
+        <div class="mono-block"><span class="hl">SUBJECT ZERO</span>
+─────────────────────────
+<span class="dim">STATUS:</span> UNCATALOGUED
+<span class="dim">PRIORITY:</span> CRITICAL
+─────────────────────────
+» تو اولین کسی نیستی که بررسی شده.
+اما اولین کسی هستی که به‌نظر می‌رسه می‌تونه
+از بیرون، ساختار خود سیستم رو بفهمه.
+اون‌ها تو رو انتخاب کردن چون فکر می‌کنن
+می‌تونی چیزی رو بسازی که حتی خودشون هم
+نتونستن: نسخهٔ بعدی GENESIS. «</div>
+      </div>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ CHAPTER 5 — THE GAME WITHIN ============ -->
+  <section class="scene" id="chapter-5" data-scene="chapter-5">
+    <div class="scene-visual" aria-hidden="true">
+      <img src="picture/ahura-desk.jpg" alt="" loading="lazy" onerror="this.remove()">
+    </div>
+    <div class="scene-inner">
+      <div class="scene-label">CHAPTER 05 · THE GAME WITHIN</div>
+      <h2 class="scene-title">بازی درون بازی</h2>
+      <div class="scene-body">
+        <p>روزها به دو بخش تقسیم شد. در ظاهر، اهورا همکاری با Vantage را پذیرفته بود؛ در باطن، با هورام و دکتر بهرامی روی شناخت ساختار واقعی GENESIS کار می‌کرد.</p>
+        <p>او فهمید مقابلهٔ مستقیم بی‌فایده است. Vantage یک ساختمان نبود؛ شبکه‌ای از سرمایه‌گذاران، قراردادها و روابط پنهان. پس تصمیم گرفت به‌جای جنگیدن با سیستم، آن را از درون بشناسد.</p>
+        <p>در یکی از جلسات، اردشیر خواست طرحی برای نسخهٔ جدید GENESIS ارائه دهد. اهورا طرحی داد که در نگاه اول حتی از انتظارات فراتر بود. اما یک تفاوت اساسی داشت: در معماری جدید، امکان مشاهدهٔ مسیر تصمیم‌گیری، ثبت تغییرات و بررسی مستقل خروجی‌ها طراحی شده بود.</p>
+        <blockquote class="key-quote">
+          «هر سیستمی که نتونیم بفهمیم چطور تصمیم می‌گیره، دیر یا زود به یک مشکل تبدیل می‌شه.»
+        </blockquote>
+        <p>اردشیر لبخند زد: <span class="en-code">«تو هنوز خیلی ایده‌آل‌گرایی.»</span> — اهورا: <span class="en-code">«و شما هنوز زیادی به کنترل علاقه دارید.»</span></p>
+        <p>اما هیچ‌کدام نمی‌دانستند دیگری دقیقاً چه چیزی در ذهن دارد.</p>
+      </div>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ CHAPTER 6 — THE PRICE OF TRUST ============ -->
+  <section class="scene" id="chapter-6" data-scene="chapter-6">
+    <div class="scene-inner">
+      <div class="scene-label">CHAPTER 06 · THE PRICE OF TRUST</div>
+      <h2 class="scene-title">بهای اعتماد</h2>
+      <div class="scene-body">
+        <p>یکی از فایل‌های محرمانه‌ای که هورام و اهورا روی آن کار می‌کردند به دست مدیران Vantage رسید. اردشیر او را به دفترش فراخواند: <span class="en-code">«فکر می‌کنم لازم باشه دربارهٔ بعضی اتفاقات صحبت کنیم.»</span></p>
+        <p>روی میز چند سند بود: <span class="en-code">«اطلاعات پروژه از مسیرهایی خارج شده که نباید خارج می‌شدن.»</span> — <span class="en-code">«و فکر می‌کنید کار منه؟»</span> — <span class="en-code">«فکر نمی‌کنم. دارم بررسی می‌کنم.»</span></p>
+        <p>هنگام خروج، هورام منتظرش بود: <span class="en-code">«باید از اینجا بریم. یکی از دسترسی‌های من بسته شده.»</span></p>
+        <p>آن شب، هورام ناپدید شد. تلفنش خاموش. دسترسی‌هایش غیرفعال. فایل‌های کاری‌اش از سرور پاک شده بودند.</p>
+        <blockquote class="key-quote">
+          «اعتماد، نقطهٔ ضعف آدم‌های باهوشه.»
+        </blockquote>
+        <p>اهورا پاسخ داد: <span class="en-code">«شاید. اما بدون اعتماد هم هیچ چیزی ساخته نمی‌شه.»</span></p>
+      </div>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ CHAPTER 7 — CLIMAX ============ -->
+  <section class="scene" id="chapter-7" data-scene="chapter-7">
+    <div class="scene-visual" aria-hidden="true">
+      <img src="picture/env-gala-hall.jpg" alt="" loading="lazy" onerror="this.remove()">
+    </div>
+    <div class="scene-inner">
+      <div class="scene-label">CHAPTER 07 · CLIMAX — OPENING NIGHT</div>
+      <h2 class="scene-title">شب افتتاحیه</h2>
+      <div class="scene-body">
+        <p>سه ماه گذشت. سالن مراسم Vantage با حضور سرمایه‌گذاران، مدیران ارشد و رسانه‌ها پر شد. اردشیر روی صحنه از آینده‌ای سخن گفت که تصمیم‌گیری دیگر محدود به شهود انسان‌ها نخواهد بود. صفحهٔ نمایش اصلی روشن شد. شمارش معکوس آغاز شد.</p>
+        <p>به‌جای لوگوی GENESIS، جمله‌ای ظاهر شد. هیچ‌کس در سالن حرف نمی‌زد. ساختار اطلاعاتی پروژه روی صفحه نمایان شد: قراردادهای محرمانه، مسیرهای تأمین مالی، اسناد دست‌کاری تصمیم مدیران و سرمایه‌گذاران.</p>
+        <p>اردشیر به سمت اهورا آمد: <span class="en-code">«تو چه کار کردی؟»</span> — <span class="en-code">«فکر می‌کنی برنده شدی؟»</span></p>
+        <blockquote class="key-quote">
+          «نه. من فقط اشتباهات تو رو زودتر دیدم.»
+        </blockquote>
+        <p>صفحه تاریک شد. یک جمله روی آن ماند: <span class="en-code">THE WORLD DOESN'T NEED ANOTHER KING.</span></p>
+      </div>
+    </div>
+    <div class="countdown-overlay" id="countdown" aria-hidden="true"></div>
+    <div class="glitch-text" id="glitch-text" data-text="YOU WERE NEVER IN CONTROL" aria-hidden="true">YOU WERE NEVER IN CONTROL</div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ CHAPTER 8 — AFTERMATH ============ -->
+  <section class="scene" id="chapter-8" data-scene="chapter-8">
+    <div class="scene-visual" aria-hidden="true">
+      <img src="picture/env-workspace.jpg" alt="" loading="lazy" onerror="this.remove()">
+    </div>
+    <div class="scene-inner">
+      <div class="scene-label">CHAPTER 08 · AFTERMATH</div>
+      <h2 class="scene-title">پس‌لرزه</h2>
+      <div class="scene-body">
+        <p>صبح روز بعد، خبر افشای اسناد Vantage در تمام رسانه‌ها منتشر شد. سهام سقوط کرد. هیئت‌مدیره جلسهٔ اضطراری تشکیل داد. چند مدیر ارشد استعفا کردند و پرونده‌های قضایی متعددی آغاز شد. اردشیر پارسا دیگر در دفترش حضور نداشت.</p>
+        <p>اهورا برخلاف انتظار احساس پیروزی نمی‌کرد. شرکت بخشی از دارایی‌های خود را واگذار کرده بود و او به‌عنوان مدیر توسعهٔ فناوری منصوب شده بود. سامانهٔ ARCHITECT فعال بود.</p>
+        <p>یک مسئله هنوز حل نشده بود: هورام.</p>
+        <p>چند روز بعد، در باز شد. هورام وارد شد. خسته به نظر می‌رسید، اما سالم بود.</p>
+        <p><span class="en-code">«کجا بودی؟»</span> — <span class="en-code">«جایی که نمی‌تونستن پیدام کنن. اگر می‌دونستی، نمی‌تونستی وانمود کنی که چیزی نمی‌دونی.»</span></p>
+        <blockquote class="key-quote">
+          «همهٔ ما بخشی از بازی بودیم. تفاوتش این بود که بعضی‌ها می‌دونستن.»
+        </blockquote>
+      </div>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ CHAPTER 9 — PHASE TWO ============ -->
+  <section class="scene" id="chapter-9" data-scene="chapter-9">
+    <div class="scene-visual" aria-hidden="true">
+      <img src="picture/ahura-closeup.jpg" alt="" loading="lazy" onerror="this.remove()">
+    </div>
+    <div class="scene-inner">
+      <div class="scene-label">CHAPTER 09 · PHASE TWO</div>
+      <h2 class="scene-title">مرحلهٔ دوم</h2>
+      <div class="scene-body">
+        <p>چند هفته بعد، دفتری متفاوت شکل گرفت. فضایی مینیمال، نورپردازی کنترل‌شده، کارگاه کوچک مهندسی. روی دیوار، جمله‌ای با حروف فلزی:</p>
+        <div class="mono-block">BUILD WHAT YOU WISH EXISTED.</div>
+        <p>تلفن زنگ خورد. شمارهٔ ناشناس.</p>
+        <p><span class="en-code">«تبریک می‌گم. شنیدم بالاخره شرکت رو به دست گرفتی.»</span> — <span class="en-code">«شما کی هستید؟»</span> — <span class="en-code">«کسی که از ابتدا این مسیر رو دنبال می‌کرده.»</span></p>
+        <blockquote class="key-quote">
+          «ما دنبال کسی نبودیم که سیستم رو کنترل کنه. دنبال کسی بودیم که بتونه سیستم بعدی رو بسازه. ویکتور فقط یک مدیر بود. GENESIS هم فقط یک ابزار بود.»
+        </blockquote>
+        <p>تماس قطع شد. نمایشگر اصلی دفتر روشن شد. پیام رمزگذاری‌شده. فرستنده: <span class="en-code">UNKNOWN</span>. عنوان:</p>
+        <div class="mono-block"><span class="hl">PROJECT GENESIS — PHASE TWO</span>
+─────────────────────────
+تصویری از شبکه‌ای بزرگ از شرکت‌ها و مؤسسات
+در سراسر جهان ظاهر شد.
+در مرکز تصویر، یک پرونده قرار داشت.
+─────────────────────────
+<span class="hl">THE ARCHITECT</span>
+<span class="danger">SUBJECT ZERO</span></div>
+        <p>اهورا آرام از صندلی بلند شد. برای اولین بار در تمام این مدت، نمی‌دانست دقیقاً با چه چیزی روبه‌روست. به انعکاس چهره‌اش در شیشه نگاه کرد. گوشهٔ لبش اندکی بالا رفت.</p>
+        <p><span class="en-code">«خب... این یکی جالبه.»</span></p>
+      </div>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ TITLES ============ -->
+  <section class="scene titles-scene" id="titles" data-scene="titles">
+    <div class="scene-inner" style="text-align:center;">
+      <p class="titles-line gold">THE WORLD DOESN'T NEED ANOTHER KING.</p>
+      <p class="titles-line gold">IT NEEDS AN ARCHITECT.</p>
+      <p class="titles-line small" style="margin-top:2.5rem;opacity:0.7;">او نمی‌خواست دنیا را تغییر دهد؛ می‌خواست بفهمد چه کسی آن را ساخته است.</p>
+      <p class="titles-line small" style="margin-top:0.5rem;">END OF CHAPTER ONE</p>
+      <p class="titles-line small" style="margin-top:3rem;font-size:0.72rem;opacity:0.45;letter-spacing:0.35em;">— THE ARCHITECT —</p>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- ============ POST-CREDIT ============ -->
+  <section class="scene post-credit" id="post-credit" data-scene="post-credit">
+    <div class="scene-inner" style="text-align:center;">
+      <div class="pc-monitor-grid" aria-hidden="true">
+        <div class="pc-monitor"></div><div class="pc-monitor"></div><div class="pc-monitor"></div>
+        <div class="pc-monitor"></div><div class="pc-monitor"></div><div class="pc-monitor"></div>
+      </div>
+      <div class="pc-dialog">
+        <p class="pc-line speaker">— نیکا —</p>
+        <p class="pc-line">«سوژهٔ صفر وارد مرحلهٔ دوم شده. برنامهٔ بعدی چیه؟»</p>
+        <p class="pc-line speaker">— صدای مردِ ناشناس —</p>
+        <p class="pc-line">«هیچ برنامه‌ای.»</p>
+        <p class="pc-line speaker">— نیکا —</p>
+        <p class="pc-line">«یعنی چی؟»</p>
+        <p class="pc-line speaker">— صدای مردِ ناشناس —</p>
+        <p class="pc-line">«بذار خودش تصمیم بگیره.»</p>
+        <p class="pc-line speaker">— نیکا —</p>
+        <p class="pc-line">«اگر از کنترل خارج بشه؟»</p>
+        <p class="pc-line speaker">— صدای مردِ ناشناس —</p>
+        <p class="pc-line">«برای همین انتخابش کردیم.»</p>
+      </div>
+      <div class="pc-final" id="pc-final">PREDICTION CONFIDENCE: UNKNOWN</div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ============================================================
+   THE ARCHITECT — Scripts
+   ============================================================ */
+
+/* ---------- Audio Controller (Web Audio API ambient) ---------- */
+class AudioController {
+  constructor() {
+    this.ctx = null;
+    this.enabled = false;
+    this.nodes = [];
+  }
+  async toggle() {
+    if (!this.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return false;
+      this.ctx = new AC();
+    }
+    if (this.ctx.state === 'suspended') {
+      try { await this.ctx.resume(); } catch(e) {}
+    }
+    if (this.enabled) { this.stop(); } else { this.start(); }
+    return this.enabled;
+  }
+  start() {
+    try {
+      // Rain-like filtered noise
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const buf = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buf; noise.loop = true;
+
+      const filt = this.ctx.createBiquadFilter();
+      filt.type = 'lowpass'; filt.frequency.value = 780; filt.Q.value = 0.6;
+
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.value = 0.07;
+
+      noise.connect(filt); filt.connect(noiseGain); noiseGain.connect(this.ctx.destination);
+      noise.start();
+
+      // Low drone
+      const drone = this.ctx.createOscillator();
+      drone.type = 'sine'; drone.frequency.value = 55;
+      const droneGain = this.ctx.createGain();
+      droneGain.gain.value = 0.025;
+      drone.connect(droneGain); droneGain.connect(this.ctx.destination);
+      drone.start();
+
+      this.nodes = [noise, drone];
+      this.enabled = true;
+    } catch(e) { this.enabled = false; }
+  }
+  stop() {
+    this.nodes.forEach(n => { try { n.stop(); } catch(e){} });
+    this.nodes = [];
+    this.enabled = false;
+  }
+}
+
+const audioCtrl = new AudioController();
+
+/* ---------- Gate ---------- */
+const gate = document.getElementById('gate');
+const story = document.getElementById('story');
+const enterBtn = document.getElementById('enter-btn');
+const audioBtn = document.getElementById('audio-btn');
+
+audioBtn.addEventListener('click', async () => {
+  const on = await audioCtrl.toggle();
+  audioBtn.textContent = on ? 'صدا: روشن' : 'صدا: خاموش';
+});
+
+enterBtn.addEventListener('click', () => {
+  story.hidden = false;
+  gate.classList.add('exiting');
+  setTimeout(() => {
+    gate.style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    initObservers();
+    updateActiveNav();
+  }, 1400);
+});
+
+/* ---------- Chapter Nav ---------- */
+const chapterLabels = [
+  ['prologue',    'پرولوگ'],
+  ['chapter-1',   'قرارداد'],
+  ['chapter-2',   'سوژه ۴۷'],
+  ['chapter-3',   'مردی که...'],
+  ['chapter-4',   'معمار اولیه'],
+  ['chapter-5',   'بازی درون بازی'],
+  ['chapter-6',   'بهای اعتماد'],
+  ['chapter-7',   'شب افتتاحیه'],
+  ['chapter-8',   'پس‌لرزه'],
+  ['chapter-9',   'مرحله دوم'],
+  ['titles',      'تیتراژ'],
+  ['post-credit', 'پس از تیتراژ']
+];
+
+function buildNav() {
+  const nav = document.getElementById('chapter-nav');
+  chapterLabels.forEach(([id, label]) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.target = id;
+    btn.dataset.label = label;
+    btn.setAttribute('aria-label', label);
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(id);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+    nav.appendChild(btn);
+  });
+}
+
+function updateActiveNav() {
+  const scenes = [...document.querySelectorAll('.scene')];
+  const scrollMid = window.scrollY + window.innerHeight * 0.4;
+  let activeId = scenes[0]?.id;
+  for (const s of scenes) {
+    if (s.offsetTop <= scrollMid) activeId = s.id;
+  }
+  document.querySelectorAll('.chapter-nav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.target === activeId);
+  });
+}
+
+/* ---------- Intersection Observer ---------- */
+let sceneObserver = null;
+let triggered = new WeakSet();
+
+function initObservers() {
+  if (sceneObserver) return;
+
+  sceneObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+
+        if (!triggered.has(entry.target)) {
+          triggered.add(entry.target);
+          if (entry.target.dataset.scene === 'chapter-7') triggerClimax(entry.target);
+          if (entry.target.dataset.scene === 'post-credit') triggerPostCredit(entry.target);
+        }
+      }
+    });
+  }, { threshold: 0.25 });
+
+  document.querySelectorAll('.scene').forEach(s => sceneObserver.observe(s));
+
+  window.addEventListener('scroll', updateActiveNav, { passive: true });
+}
+
+/* ---------- Climax Sequence ---------- */
+function triggerClimax(scene) {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const overlay = scene.querySelector('#countdown');
+  const glitch = scene.querySelector('#glitch-text');
+  if (!overlay || !glitch) { scene.classList.add('ready'); return; }
+
+  if (reduce) {
+    overlay.style.display = 'none';
+    glitch.style.display = 'none';
+    scene.classList.add('ready');
+    return;
+  }
+
+  overlay.classList.add('active');
+
+  const STEP = 260;
+  const numbers = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+  let lastEl = null;
+
+  numbers.forEach((n, i) => {
+    setTimeout(() => {
+      if (lastEl) {
+        lastEl.classList.add('hide');
+        lastEl.classList.remove('show');
+        const toRemove = lastEl;
+        setTimeout(() => toRemove.remove(), 200);
+      }
+      const el = document.createElement('div');
+      el.className = 'countdown-num';
+      el.textContent = String(n).padStart(2, '0');
+      overlay.appendChild(el);
+      requestAnimationFrame(() => el.classList.add('show'));
+      lastEl = el;
+    }, i * STEP);
+  });
+
+  const countdownEnd = numbers.length * STEP;
+
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    overlay.innerHTML = '';
+    glitch.classList.add('active');
+  }, countdownEnd + 200);
+
+  setTimeout(() => {
+    glitch.classList.remove('active');
+    scene.classList.add('ready');
+  }, countdownEnd + 200 + 2000);
+}
+
+/* ---------- Post-Credit Reveal ---------- */
+function triggerPostCredit(scene) {
+  const lines = scene.querySelectorAll('.pc-line');
+  const final = scene.querySelector('#pc-final');
+  lines.forEach((line, i) => {
+    setTimeout(() => line.classList.add('visible'), 400 + i * 850);
+  });
+  if (final) {
+    setTimeout(() => final.classList.add('visible'), 400 + lines.length * 850 + 1200);
+  }
+}
+
+/* ---------- Keyboard Navigation ---------- */
+document.addEventListener('keydown', (e) => {
+  if (story.hidden) {
+    if (e.key === 'Enter') { e.preventDefault(); enterBtn.click(); }
+    return;
+  }
+  const scenes = [...document.querySelectorAll('.scene')];
+  const scrollMid = window.scrollY + window.innerHeight * 0.5;
+  let current = 0;
+  for (let i = 0; i < scenes.length; i++) {
+    if (scenes[i].offsetTop <= scrollMid) current = i;
+  }
+  if (e.key === 'ArrowDown' || e.key === ' ') {
+    e.preventDefault();
+    if (current < scenes.length - 1) {
+      scenes[current + 1].scrollIntoView({ behavior: 'smooth' });
+    }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (current > 0) {
+      scenes[current - 1].scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+});
+
+/* ---------- Init ---------- */
+buildNav();
+</script>
+</body>
+</html>
